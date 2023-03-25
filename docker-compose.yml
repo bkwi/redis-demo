@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+
+  app:
+    image: app-image
+    container_name: app-container
+    build:
+      dockerfile: app.Dockerfile
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+      REDIS_QUEUE: task-queue
+    ports:
+      - 8000:8000
+    command: python app.py
+    volumes:
+      - ./:/code
+
+  worker:
+    image: worker-image
+    build:
+      dockerfile: worker.Dockerfile
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_QUEUE: task-queue
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+    command: python worker.py
+    volumes:
+      - ./:/code
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
